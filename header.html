@@ -1,108 +1,197 @@
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GENZET HOME - Pengeluaran</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow-x: hidden;
+      background-color: #f8f9fa;
+    }
+    .main-content {
+      padding: 2rem 1rem;
+      max-width: 960px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .table th, .table td {
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCxjTmRPiF4OrRAsneB_SUi1SpGOgkwrYg",
-    authDomain: "genzet-home.firebaseapp.com",
-    projectId: "genzet-home",
-    storageBucket: "genzet-home.appspot.com",
-    messagingSenderId: "586231239859",
-    appId: "1:586231239859:web:9fc3a69f2f2ef0bf8c8cc6"
-  };
+  <div class="main-content">
+    <h4 class="text-center mb-4 fs-5"><i class="fa-solid fa-money-bill-wave"></i> Data Pengeluaran</h4>
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <i class="fa-solid fa-plus-circle"></i> Tambah Pengeluaran
+      </div>
+      <div class="card-body">
+        <form id="pengeluaranForm" class="row g-3">
+          <div class="col-md-4">
+            <label for="keterangan" class="form-label">Keterangan</label>
+            <input type="text" class="form-control" id="keterangan" placeholder="Keterangan" required>
+          </div>
+          <div class="col-md-3">
+            <label for="jumlah" class="form-label">Jumlah (Rp)</label>
+            <input type="number" class="form-control" id="jumlah" placeholder="Jumlah" required>
+          </div>
+          <div class="col-md-3">
+            <label for="bukti" class="form-label">Bukti (File)</label>
+            <input type="file" class="form-control" id="bukti">
+          </div>
+          <div class="col-md-2 d-grid align-items-end">
+            <button type="submit" class="btn btn-success"><i class="fa-solid fa-plus"></i> Tambah</button>
+          </div>
+        </form>
+        <div id="status" class="mt-2 text-secondary small"></div>
+      </div>
+    </div>
 
-  const form = document.getElementById("pengeluaranForm");
-  const tbody = document.querySelector("#tablePengeluaran tbody");
-  const totalEl = document.getElementById("totalPengeluaran");
-  const statusEl = document.getElementById("status");
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <i class="fa-solid fa-table"></i> Riwayat Pengeluaran
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-striped mb-0" id="tablePengeluaran">
+          <thead class="table-light">
+            <tr>
+              <th>Nomor</th>
+              <th>Keterangan</th>
+              <th>Jumlah</th>
+              <th>Bukti</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
 
-  let total = 0;
+    <div class="alert alert-secondary text-end">
+      <strong>Total Pengeluaran:</strong> <span id="totalPengeluaran">Rp 0</span>
+    </div>
+  </div>
 
-  async function loadData() {
-    tbody.innerHTML = "";
-    total = 0;
-    const snapshot = await getDocs(collection(db, "pengeluaran"));
-    let nomor = 1;
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
 
-    snapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      total += parseInt(data.jumlah || 0);
+    const firebaseConfig = {
+      apiKey: "AIzaSyCxjTmRPiF4OrRAsneB_SUi1SpGOgkwrYg",
+      authDomain: "genzet-home.firebaseapp.com",
+      projectId: "genzet-home",
+      storageBucket: "genzet-home.appspot.com",
+      messagingSenderId: "586231239859",
+      appId: "1:586231239859:web:9fc3a69f2f2ef0bf8c8cc6"
+    };
 
-      const buktiLink = data.bukti ? `<a href="${data.bukti}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-file-arrow-down"></i> Bukti</a>` : "-";
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
 
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${nomor++}</td>
-        <td>${data.keterangan}</td>
-        <td>Rp ${parseInt(data.jumlah).toLocaleString()}</td>
-        <td>${buktiLink}</td>
-        <td><button class="btn btn-sm btn-danger" data-id="${docSnap.id}" data-url="${data.bukti || ""}"><i class="fa-solid fa-trash"></i></button></td>
-      `;
-      tbody.appendChild(tr);
-    });
-    totalEl.textContent = "Rp " + total.toLocaleString();
-  }
+    const form = document.getElementById("pengeluaranForm");
+    const tbody = document.querySelector("#tablePengeluaran tbody");
+    const totalEl = document.getElementById("totalPengeluaran");
+    const statusEl = document.getElementById("status");
 
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
+    let total = 0;
 
-    try {
-      const keterangan = document.getElementById("keterangan").value;
-      const jumlah = document.getElementById("jumlah").value;
-      const bukti = document.getElementById("bukti").files[0];
+    async function loadData() {
+      tbody.innerHTML = "";
+      total = 0;
+      const snapshot = await getDocs(collection(db, "pengeluaran"));
+      let nomor = 1;
 
-      let url = "";
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        total += parseInt(data.jumlah || 0);
 
-      if (bukti) {
-        statusEl.textContent = "Mengunggah bukti...";
-        const buktiRef = ref(storage, `bukti/${Date.now()}_${bukti.name}`);
-        await uploadBytes(buktiRef, bukti);
-        url = await getDownloadURL(buktiRef);
-      }
+        const buktiLink = data.bukti ? `<a href="${data.bukti}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-file-arrow-down"></i> Bukti</a>` : "-";
 
-      statusEl.textContent = "Menyimpan data...";
-      await addDoc(collection(db, "pengeluaran"), {
-        keterangan,
-        jumlah,
-        bukti: url
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${nomor++}</td>
+          <td>${data.keterangan}</td>
+          <td>Rp ${parseInt(data.jumlah).toLocaleString()}</td>
+          <td>${buktiLink}</td>
+          <td><button class="btn btn-sm btn-danger" data-id="${docSnap.id}" data-url="${data.bukti || ""}"><i class="fa-solid fa-trash"></i></button></td>
+        `;
+        tbody.appendChild(tr);
       });
-
-      form.reset();
-      statusEl.textContent = "✅ Data berhasil disimpan.";
-      await loadData();
-    } catch (err) {
-      console.error(err);
-      statusEl.textContent = "❗ Gagal menyimpan data.";
-    } finally {
-      setTimeout(() => statusEl.textContent = "", 3000);
+      totalEl.textContent = "Rp " + total.toLocaleString();
     }
-  });
 
-  tbody.addEventListener("click", async e => {
-    if (e.target.closest("button[data-id]")) {
-      const button = e.target.closest("button[data-id]");
-      const id = button.getAttribute("data-id");
-      const fileURL = button.getAttribute("data-url");
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
 
-      await deleteDoc(doc(db, "pengeluaran", id));
+      try {
+        const keterangan = document.getElementById("keterangan").value;
+        const jumlah = document.getElementById("jumlah").value;
+        const bukti = document.getElementById("bukti").files[0];
 
-      if (fileURL) {
-        try {
-          const fileRef = ref(storage, fileURL);
-          await deleteObject(fileRef);
-        } catch (error) {
-          console.warn("Gagal menghapus file dari storage, mungkin sudah tidak ada.");
+        let url = "";
+
+        if (bukti) {
+          statusEl.textContent = "Mengunggah bukti...";
+          const buktiRef = ref(storage, `bukti/${Date.now()}_${bukti.name}`);
+          await uploadBytes(buktiRef, bukti);
+          url = await getDownloadURL(buktiRef);
         }
+
+        statusEl.textContent = "Menyimpan data...";
+        await addDoc(collection(db, "pengeluaran"), {
+          keterangan,
+          jumlah,
+          bukti: url
+        });
+
+        form.reset();
+        statusEl.textContent = "✅ Data berhasil disimpan.";
+        await loadData();
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "❗ Gagal menyimpan data.";
+      } finally {
+        setTimeout(() => statusEl.textContent = "", 3000);
       }
+    });
 
-      await loadData();
-    }
-  });
+    tbody.addEventListener("click", async e => {
+      if (e.target.closest("button[data-id]")) {
+        const button = e.target.closest("button[data-id]");
+        const id = button.getAttribute("data-id");
+        const fileURL = button.getAttribute("data-url");
 
-  loadData();
-</script>
+        await deleteDoc(doc(db, "pengeluaran", id));
+
+        if (fileURL) {
+          try {
+            const fileRef = ref(storage, fileURL);
+            await deleteObject(fileRef);
+          } catch (error) {
+            console.warn("Gagal menghapus file dari storage, mungkin sudah tidak ada.");
+          }
+        }
+
+        await loadData();
+      }
+    });
+
+    loadData();
+  </script>
+</body>
+</html>
