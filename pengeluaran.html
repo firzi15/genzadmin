@@ -9,6 +9,16 @@
 <body class="p-4">
   <div id="navbar-placeholder"></div>
 
+<script>
+  fetch('header.html')
+    .then(response => {
+      if (!response.ok) throw new Error('Gagal memuat header');
+      return response.text();
+    })
+    .then(html => document.getElementById('navbar-placeholder').innerHTML = html)
+    .catch(error => console.error(error));
+</script>
+
   <!-- Konten halaman Pengeluaran -->
   <h2>Data Pengeluaran</h2>
   <form id="pengeluaranForm" class="row g-3 mb-4">
