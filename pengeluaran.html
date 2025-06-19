@@ -10,6 +10,32 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-Xx8CLm+P1Z5yRP5o6ta0U5G2G0u+OKPoG9UPhjW77E2y7CDfRe6mIIdFSuH4RIykDwEXep3TBoUvMnsOkhz3dw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- CSS Tambahan -->
+  <style>
+   html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden; /* Hilangkan scroll horizontal */
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* agar selalu memenuhi tinggi layar */
+}
+
+#navbar-placeholder {
+  flex-shrink: 0; /* Navbar tetap */
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto; /* Scroll vertikal jika isi terlalu panjang */
+  padding: 1rem;
+}
+
+  </style>
 </head>
 <body>
   <div id="navbar-placeholder"></div>
