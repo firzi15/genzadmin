@@ -4,113 +4,163 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GENZET HOME - Pengeluaran</title>
-  <!-- CSS Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      overflow-x: hidden;
-      background-color: #f8f9fa;
+      margin: 0; padding: 0; height: 100%; width: 100%;
+      background-color: #f8f9fa; overflow-x: hidden;
     }
     .main-content {
-      padding: 2rem 1rem;
-      max-width: 960px;
-      margin: 0 auto;
-      background-color: #fff;
-      border-radius: 0.5rem;
+      padding: 2rem 1rem; max-width: 960px; margin: 0 auto;
+      background-color: #fff; border-radius: 0.5rem;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .table th, .table td {
-      vertical-align: middle;
-    }
+    .table th, .table td { vertical-align: middle; }
   </style>
 </head>
 <body>
 
-  <div class="main-content">
-    <h4 class="text-center mb-4 fs-5"><i class="fa-solid fa-money-bill-wave"></i> Data Pengeluaran</h4>
+<div class="main-content">
+  <h4 class="text-center mb-4 fs-5"><i class="fa-solid fa-money-bill-wave"></i> Data Pengeluaran</h4>
 
-    <div class="card mb-4">
-      <div class="card-header bg-success text-white">
-        <i class="fa-solid fa-plus-circle"></i> Tambah Pengeluaran
-      </div>
-      <div class="card-body">
-        <form id="pengeluaranForm" class="row g-3">
-          <div class="col-md-4">
-            <label for="keterangan" class="form-label">Keterangan</label>
-            <input type="text" class="form-control" id="keterangan" placeholder="Keterangan" required>
-          </div>
-          <div class="col-md-3">
-            <label for="jumlah" class="form-label">Jumlah (Rp)</label>
-            <input type="number" class="form-control" id="jumlah" placeholder="Jumlah" required>
-          </div>
-          <div class="col-md-3">
-            <label for="bukti" class="form-label">Bukti (File)</label>
-            <input type="file" class="form-control" id="bukti" required>
-          </div>
-          <div class="col-md-2 d-grid align-items-end">
-            <button type="submit" class="btn btn-success"><i class="fa-solid fa-plus"></i> Tambah</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div class="card mb-4">
-      <div class="card-header bg-success text-white">
-        <i class="fa-solid fa-table"></i> Riwayat Pengeluaran
-      </div>
-      <div class="card-body p-0">
-        <table class="table table-striped mb-0" id="tablePengeluaran">
-          <thead class="table-light">
-            <tr>
-              <th>#</th>
-              <th>Keterangan</th>
-              <th>Jumlah</th>
-              <th>Bukti</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="alert alert-secondary text-end">
-      <strong>Total Pengeluaran:</strong> <span id="totalPengeluaran">Rp 0</span>
+  <div class="card mb-4">
+    <div class="card-header bg-success text-white"><i class="fa-solid fa-plus-circle"></i> Tambah Pengeluaran</div>
+    <div class="card-body">
+      <form id="pengeluaranForm" class="row g-3">
+        <div class="col-md-4">
+          <label for="keterangan" class="form-label">Keterangan</label>
+          <input type="text" class="form-control" id="keterangan" placeholder="Keterangan" required>
+        </div>
+        <div class="col-md-3">
+          <label for="jumlah" class="form-label">Jumlah (Rp)</label>
+          <input type="number" class="form-control" id="jumlah" placeholder="Jumlah" required>
+        </div>
+        <div class="col-md-2 d-grid align-items-end">
+          <button type="submit" class="btn btn-success"><i class="fa-solid fa-plus"></i> Tambah</button>
+        </div>
+      </form>
+      <div id="status" class="mt-2 text-secondary small"></div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    let total = 0;
-    const form = document.getElementById('pengeluaranForm');
-    const tbody = document.querySelector('#tablePengeluaran tbody');
-    const totalEl = document.getElementById('totalPengeluaran');
+  <div class="card mb-4">
+    <div class="card-header bg-success text-white"><i class="fa-solid fa-table"></i> Riwayat Pengeluaran</div>
+    <div class="card-body p-0">
+      <table class="table table-striped mb-0" id="tablePengeluaran">
+        <thead class="table-light">
+          <tr>
+            <th>Nomor</th>
+            <th>Keterangan</th>
+            <th>Jumlah</th>
+            <th>Uploader</th>
+            <th>Tanggal</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      const ket = document.getElementById('keterangan').value;
-      const jumlah = parseInt(document.getElementById('jumlah').value);
-      const buktiFile = document.getElementById('bukti').files[0];
+  <div class="alert alert-secondary text-end">
+    <strong>Total Pengeluaran:</strong> <span id="totalPengeluaran">Rp 0</span>
+  </div>
+</div>
 
-      const url = URL.createObjectURL(buktiFile);
-      total += jumlah;
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
-      const row = `<tr>
-        <td>${tbody.rows.length + 1}</td>
-        <td>${ket}</td>
-        <td>Rp ${jumlah.toLocaleString()}</td>
-        <td><a href="${url}" class="btn btn-sm btn-outline-primary" target="_blank"><i class="fa-solid fa-file-arrow-down"></i> Lihat</a></td>
-      </tr>`;
-      tbody.insertAdjacentHTML('beforeend', row);
-      totalEl.textContent = "Rp " + total.toLocaleString();
+  const firebaseConfig = {
+    apiKey: "AIzaSyCxjTmRPiF4OrRAsneB_SUi1SpGOgkwrYg",
+    authDomain: "genzet-home.firebaseapp.com",
+    projectId: "genzet-home",
+    storageBucket: "genzet-home.appspot.com",
+    messagingSenderId: "586231239859",
+    appId: "1:586231239859:web:9fc3a69f2f2ef0bf8c8cc6"
+  };
 
-      form.reset();
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  const form = document.getElementById("pengeluaranForm");
+  const tbody = document.querySelector("#tablePengeluaran tbody");
+  const totalEl = document.getElementById("totalPengeluaran");
+  const statusEl = document.getElementById("status");
+  let currentUser = null;
+  let total = 0;
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      loadData();
+    } else {
+      window.location.href = "login.html"; // Redirect kalau belum login
+    }
+  });
+
+  async function loadData() {
+    tbody.innerHTML = "";
+    total = 0;
+    const snapshot = await getDocs(query(collection(db, "pengeluaran"), orderBy("tanggal", "desc")));
+    let nomor = 1;
+
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      total += parseInt(data.jumlah || 0);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${nomor++}</td>
+        <td>${data.keterangan}</td>
+        <td>Rp ${parseInt(data.jumlah).toLocaleString()}</td>
+        <td>${data.uploader || "-"}</td>
+        <td>${data.tanggal || "-"}</td>
+        <td><button class="btn btn-sm btn-danger" data-id="${docSnap.id}"><i class="fa-solid fa-trash"></i></button></td>
+      `;
+      tbody.appendChild(tr);
     });
-  </script>
+    totalEl.textContent = "Rp " + total.toLocaleString();
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentUser) return alert("Belum login.");
+
+    const keterangan = document.getElementById("keterangan").value;
+    const jumlah = parseInt(document.getElementById("jumlah").value);
+    const tanggal = new Date();
+    const tanggalStr = `${String(tanggal.getDate()).padStart(2, '0')}-${String(tanggal.getMonth() + 1).padStart(2, '0')}-${String(tanggal.getFullYear()).slice(-2)}`;
+
+    statusEl.textContent = "Menyimpan...";
+    try {
+      await addDoc(collection(db, "pengeluaran"), {
+        keterangan,
+        jumlah,
+        tanggal: tanggalStr,
+        uploader: currentUser.email
+      });
+      form.reset();
+      statusEl.textContent = "✅ Berhasil disimpan.";
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = "❗ Gagal menyimpan data.";
+    } finally {
+      setTimeout(() => statusEl.textContent = "", 3000);
+    }
+  });
+
+  tbody.addEventListener("click", async (e) => {
+    if (e.target.closest("button[data-id]")) {
+      const id = e.target.closest("button[data-id]").getAttribute("data-id");
+      await deleteDoc(doc(db, "pengeluaran", id));
+      await loadData();
+    }
+  });
+</script>
 </body>
 </html>
