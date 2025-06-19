@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light mb-4" style="border-bottom: 1px solid #ccc;">
   <div class="container-fluid">
-    <a class="navbar-brand fw-bold" href="index.html"><i class="fa-solid fa-house"></i> GENZET HOME</a>
+    <a class="navbar-brand fw-bold" href="index.html">GENZET HOME</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -10,55 +10,8 @@
         <li class="nav-item"><a href="pemasukan.html" class="nav-link text-dark"><i class="fa-solid fa-wallet"></i> Pemasukan</a></li>
         <li class="nav-item"><a href="pengeluaran.html" class="nav-link text-dark"><i class="fa-solid fa-money-bill-wave"></i> Pengeluaran</a></li>
         <li class="nav-item"><a href="laporan.html" class="nav-link text-dark"><i class="fa-solid fa-chart-line"></i> Laporan</a></li>
-        <li class="nav-item">
-          <button class="btn btn-link nav-link text-dark" onclick="genzetLogout()">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
-          </button>
-        </li>
+        <li class="nav-item"><button class="btn btn-link nav-link text-dark" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button></li>
       </ul>
     </div>
   </div>
 </nav>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-  import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-
-  import Swal from "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCxjTmRPiF4OrRAsneB_SUi1SpGOgkwrYg",
-    authDomain: "genzet-home.firebaseapp.com",
-    projectId: "genzet-home",
-    storageBucket: "genzet-home.appspot.com",
-    messagingSenderId: "586231239859",
-    appId: "1:586231239859:web:9fc3a69f2f2ef0bf8c8cc6"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  window.genzetLogout = () => {
-    Swal.fire({
-      title: 'Keluar dari akun?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Ya, Logout',
-      cancelButtonText: 'Batal'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await signOut(auth);
-          Swal.fire({
-            icon: 'success',
-            title: 'Logout berhasil',
-            showConfirmButton: false,
-            timer: 1500
-          }).then(() => window.location.href = 'login.html');
-        } catch (error) {
-          Swal.fire('Gagal Logout', error.message, 'error');
-        }
-      }
-    });
-  };
-</script>
