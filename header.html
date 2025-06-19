@@ -90,9 +90,12 @@
 
     function ambilData() {
       fetch(API_URL)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error("Gagal mengambil data.");
+          return res.json();
+        })
         .then(data => tampilkanData(data))
-        .catch(() => alert("Gagal mengambil data dari Sheet.best"));
+        .catch(err => alert("Gagal mengambil data dari Sheet.best\n" + err.message));
     }
 
     function tampilkanData(data) {
@@ -134,15 +137,15 @@
         body: JSON.stringify({ Keterangan: ket, Jumlah: jumlah, Tanggal: tanggal })
       })
       .then(res => {
-        if (res.ok) {
-          ambilData();
-          document.getElementById("pengeluaranForm").reset();
-          status.textContent = "Data berhasil disimpan.";
-        } else {
-          throw new Error("Gagal menyimpan data.");
-        }
+        if (!res.ok) throw new Error("Gagal menyimpan data.");
+        return res.json();
       })
-      .catch(() => {
+      .then(() => {
+        ambilData();
+        document.getElementById("pengeluaranForm").reset();
+        status.textContent = "Data berhasil disimpan.";
+      })
+      .catch(err => {
         status.textContent = "Gagal menyimpan data.";
       })
       .finally(() => {
