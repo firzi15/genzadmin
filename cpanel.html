@@ -16,22 +16,7 @@
 </head>
 <body>
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light mb-4" style="border-bottom:1px solid #ccc;">
-    <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="#">GENZET HOME</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a href="index.html" class="nav-link text-dark"><i class="fa-solid fa-house"></i> Beranda</a></li>
-          <li class="nav-item"><a href="pemasukan.html" class="nav-link text-dark"><i class="fa-solid fa-wallet"></i> Pemasukan</a></li>
-          <li class="nav-item"><a href="pengeluaran.html" class="nav-link text-dark"><i class="fa-solid fa-money-bill-wave"></i> Pengeluaran</a></li>
-          <li class="nav-item"><button class="btn btn-link nav-link text-dark" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <div id="navbar-container"></div>
 
   <div class="main-content">
     <h4 class="text-center mb-4 fs-5"><i class="fa-solid fa-chart-line"></i> Laporan Keuangan</h4>
@@ -59,7 +44,16 @@
       </div>
     </div>
   </div>
-<script type="module" src="logout.js"></script>
+ <!-- Load Navbar -->
+  <script>
+    fetch('navbar.html')
+      .then(res => res.text())
+      .then(html => document.getElementById('navbar-container').innerHTML = html)
+      .then(() => {
+        document.getElementById("logoutBtn").addEventListener("click", logout);
+      });
+  </script>
+  
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
     import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
