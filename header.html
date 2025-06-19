@@ -30,141 +30,155 @@
 </head>
 <body>
 
-<div class="main-content">
-  <h4 class="text-center mb-4 fs-5"><i class="fa-solid fa-money-bill-wave"></i> Data Pengeluaran</h4>
+  <div class="main-content">
+    <h4 class="text-center mb-4 fs-5"><i class="fa-solid fa-money-bill-wave"></i> Data Pengeluaran</h4>
 
-  <div class="card mb-4">
-    <div class="card-header bg-success text-white">
-      <i class="fa-solid fa-plus-circle"></i> Tambah Pengeluaran
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <i class="fa-solid fa-plus-circle"></i> Tambah Pengeluaran
+      </div>
+      <div class="card-body">
+        <form id="pengeluaranForm" class="row g-3">
+          <div class="col-md-4">
+            <label for="keterangan" class="form-label">Keterangan</label>
+            <input type="text" class="form-control" id="keterangan" placeholder="Keterangan" required>
+          </div>
+          <div class="col-md-3">
+            <label for="jumlah" class="form-label">Jumlah (Rp)</label>
+            <input type="number" class="form-control" id="jumlah" placeholder="Jumlah" required>
+          </div>
+          <div class="col-md-3">
+            <label for="bukti" class="form-label">Bukti (File)</label>
+            <input type="file" class="form-control" id="bukti" required>
+          </div>
+          <div class="col-md-2 d-grid align-items-end">
+            <button type="submit" class="btn btn-success"><i class="fa-solid fa-plus"></i> Tambah</button>
+          </div>
+        </form>
+        <div id="status" class="mt-2 text-secondary small"></div>
+      </div>
     </div>
-    <div class="card-body">
-      <form id="pengeluaranForm" class="row g-3">
-        <div class="col-md-4">
-          <label for="keterangan" class="form-label">Keterangan</label>
-          <input type="text" class="form-control" id="keterangan" placeholder="Keterangan" required>
-        </div>
-        <div class="col-md-3">
-          <label for="jumlah" class="form-label">Jumlah (Rp)</label>
-          <input type="number" class="form-control" id="jumlah" placeholder="Jumlah" required>
-        </div>
-        <div class="col-md-3">
-          <label for="bukti" class="form-label">Bukti (File)</label>
-          <input type="file" class="form-control" id="bukti" required>
-        </div>
-        <div class="col-md-2 d-grid align-items-end">
-          <button type="submit" class="btn btn-success"><i class="fa-solid fa-plus"></i> Tambah</button>
-        </div>
-      </form>
+
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <i class="fa-solid fa-table"></i> Riwayat Pengeluaran
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-striped mb-0" id="tablePengeluaran">
+          <thead class="table-light">
+            <tr>
+              <th>Nomor</th>
+              <th>Keterangan</th>
+              <th>Jumlah</th>
+              <th>Bukti</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="alert alert-secondary text-end">
+      <strong>Total Pengeluaran:</strong> <span id="totalPengeluaran">Rp 0</span>
     </div>
   </div>
 
-  <div class="card mb-4">
-    <div class="card-header bg-success text-white">
-      <i class="fa-solid fa-table"></i> Riwayat Pengeluaran
-    </div>
-    <div class="card-body p-0">
-      <table class="table table-striped mb-0" id="tablePengeluaran">
-        <thead class="table-light">
-          <tr>
-            <th>Nomor</th>
-            <th>Keterangan</th>
-            <th>Jumlah</th>
-            <th>Tanggal</th>
-            <th>Bukti</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
 
-  <div class="alert alert-secondary text-end">
-    <strong>Total Pengeluaran:</strong> <span id="totalPengeluaran">Rp 0</span>
-  </div>
-</div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCxjTmRPiF4OrRAsneB_SUi1SpGOgkwrYg",
+      authDomain: "genzet-home.firebaseapp.com",
+      projectId: "genzet-home",
+      storageBucket: "genzet-home.appspot.com",
+      messagingSenderId: "586231239859",
+      appId: "1:586231239859:web:9fc3a69f2f2ef0bf8c8cc6"
+    };
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCxjTmRPiF4OrRAsneB_SUi1SpGOgkwrYg",
-    authDomain: "genzet-home.firebaseapp.com",
-    projectId: "genzet-home",
-    storageBucket: "genzet-home.appspot.com",
-    messagingSenderId: "586231239859",
-    appId: "1:586231239859:web:9fc3a69f2f2ef0bf8c8cc6"
-  };
+    const form = document.getElementById("pengeluaranForm");
+    const tbody = document.querySelector("#tablePengeluaran tbody");
+    const totalEl = document.getElementById("totalPengeluaran");
+    const statusEl = document.getElementById("status");
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
-
-  const tbody = document.querySelector('#tablePengeluaran tbody');
-  const totalEl = document.getElementById('totalPengeluaran');
-
-  async function tampilkanData() {
-    tbody.innerHTML = "";
     let total = 0;
-    const querySnapshot = await getDocs(collection(db, "pengeluaran"));
-    let index = 1;
 
-    querySnapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      total += parseInt(data.jumlah);
-      tbody.innerHTML += `
-        <tr>
-          <td>${index++}</td>
+    async function loadData() {
+      tbody.innerHTML = "";
+      total = 0;
+      const snapshot = await getDocs(collection(db, "pengeluaran"));
+      let nomor = 1;
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        total += parseInt(data.jumlah || 0);
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${nomor++}</td>
           <td>${data.keterangan}</td>
           <td>Rp ${parseInt(data.jumlah).toLocaleString()}</td>
-          <td>${data.tanggal}</td>
-          <td><a href="${data.buktiURL}" class="btn btn-sm btn-outline-primary" target="_blank">Bukti</a></td>
-          <td><button class="btn btn-sm btn-danger" onclick="hapusData('${docSnap.id}', '${data.buktiPath}')"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>
-      `;
-    });
-    totalEl.textContent = "Rp " + total.toLocaleString();
-  }
-
-  window.hapusData = async (id, buktiPath) => {
-    if (confirm("Hapus data ini?")) {
-      await deleteDoc(doc(db, "pengeluaran", id));
-      if (buktiPath) {
-        const fileRef = ref(storage, buktiPath);
-        await deleteObject(fileRef).catch(() => {});
-      }
-      tampilkanData();
+          <td><a href="${data.bukti}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-file-arrow-down"></i> Bukti</a></td>
+          <td><button class="btn btn-sm btn-danger" data-id="${docSnap.id}" data-url="${data.bukti}"><i class="fa-solid fa-trash"></i></button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      totalEl.textContent = "Rp " + total.toLocaleString();
     }
-  };
 
-  document.getElementById("pengeluaranForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const keterangan = document.getElementById("keterangan").value;
-    const jumlah = parseInt(document.getElementById("jumlah").value);
-    const buktiFile = document.getElementById("bukti").files[0];
-    const tanggal = new Date().toLocaleDateString('id-ID');
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const keterangan = document.getElementById("keterangan").value;
+      const jumlah = document.getElementById("jumlah").value;
+      const bukti = document.getElementById("bukti").files[0];
 
-    const buktiPath = `bukti_pengeluaran/${Date.now()}_${buktiFile.name}`;
-    const storageRef = ref(storage, buktiPath);
-    await uploadBytes(storageRef, buktiFile);
-    const buktiURL = await getDownloadURL(storageRef);
+      if (!bukti) return;
 
-    await addDoc(collection(db, "pengeluaran"), {
-      keterangan,
-      jumlah,
-      tanggal,
-      buktiURL,
-      buktiPath
+      statusEl.textContent = "Mengunggah bukti...";
+      const buktiRef = ref(storage, `bukti/${Date.now()}_${bukti.name}`);
+      await uploadBytes(buktiRef, bukti);
+      const url = await getDownloadURL(buktiRef);
+
+      statusEl.textContent = "Menyimpan data...";
+      await addDoc(collection(db, "pengeluaran"), {
+        keterangan: keterangan,
+        jumlah: jumlah,
+        bukti: url
+      });
+
+      form.reset();
+      statusEl.textContent = "Data berhasil disimpan.";
+      await loadData();
+      setTimeout(() => statusEl.textContent = "", 3000);
     });
 
-    document.getElementById("pengeluaranForm").reset();
-    tampilkanData();
-  });
+    tbody.addEventListener("click", async e => {
+      if (e.target.closest("button[data-id]")) {
+        const button = e.target.closest("button[data-id]");
+        const id = button.getAttribute("data-id");
+        const fileURL = button.getAttribute("data-url");
 
-  tampilkanData();
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        await deleteDoc(doc(db, "pengeluaran", id));
+
+        if (fileURL) {
+          try {
+            const fileRef = ref(storage, fileURL);
+            await deleteObject(fileRef);
+          } catch {}
+        }
+
+        await loadData();
+      }
+    });
+
+    loadData();
+  </script>
 </body>
 </html>
