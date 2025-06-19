@@ -1,14 +1,30 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GENZET HOME PANEL</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+
+    i.fa-solid {
+      margin-right: 0.3rem;
+    }
+
+    #laporanChart {
+      max-height: 300px;
+    }
+  </style>
 </head>
+
 <body>
   <nav class="navbar navbar-expand-lg navbar-light mb-4" style="border-bottom: 1px solid #ccc;">
     <div class="container-fluid">
@@ -18,21 +34,49 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><button class="btn btn-link nav-link text-dark" onclick="loadPage('pengeluaran.html')"><i class="fa-solid fa-money-bill-wave"></i> Pengeluaran</button></li>
-          <li class="nav-item"><button class="btn btn-link nav-link text-dark" onclick="loadPage('pemasukan.html')"><i class="fa-solid fa-wallet"></i> Pemasukan</button></li>
+          <li class="nav-item"><a href="index.html" class="nav-link text-dark"><i class="fa-solid fa-house"></i> Beranda</a></li>
+          <li class="nav-item"><a href="pemasukan.html" class="nav-link text-dark"><i class="fa-solid fa-wallet"></i> Pemasukan</a></li>
+          <li class="nav-item"><a href="pengeluaran.html" class="nav-link text-dark"><i class="fa-solid fa-money-bill-wave"></i> Pengeluaran</a></li>
           <li class="nav-item"><button class="btn btn-link nav-link text-dark" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button></li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <div id="content">Memuat halaman...</div>
+  <div class="container mb-5">
+    <h3 class="mb-4 text-success"><i class="fa-solid fa-chart-line"></i> Laporan Keuangan</h3>
+
+    <div class="card border-success mb-3">
+      <div class="card-header bg-success text-white"><i class="fa-solid fa-filter"></i> Filter Laporan</div>
+      <div class="card-body">
+        <button class="btn btn-outline-success" onclick="filterPeriode()"><i class="fa-solid fa-calendar-days"></i> Filter Periode</button>
+      </div>
+    </div>
+
+    <div class="card border-success mb-4">
+      <div class="card-header bg-success text-white"><i class="fa-solid fa-coins"></i> Ringkasan</div>
+      <div class="card-body">
+        <p><strong>Total Pemasukan:</strong> <span id="totalPemasukan">Rp 0</span></p>
+        <p><strong>Total Pengeluaran:</strong> <span id="totalPengeluaran">Rp 0</span></p>
+        <h5 class="text-end"><strong>Saldo Akhir:</strong> <span id="saldoAkhir">Rp 0</span></h5>
+      </div>
+    </div>
+
+    <div class="card border-success">
+      <div class="card-header bg-success text-white"><i class="fa-solid fa-chart-column"></i> Grafik Laporan</div>
+      <div class="card-body">
+        <canvas id="laporanChart"></canvas>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
     import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCxjTmRPiF4OrRAsneB_SUi1SpGOgkwrYg",
@@ -45,18 +89,87 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    // Cek apakah sudah login, kalau belum redirect ke login.html
+    let chart;
+
     onAuthStateChanged(auth, (user) => {
       if (!user) window.location.href = "login.html";
+      else generateLaporan();
     });
 
-    window.loadPage = (page) => {
-      fetch(page)
-        .then(res => res.text())
-        .then(html => document.getElementById('content').innerHTML = html)
-        .catch(err => document.getElementById('content').innerHTML = '<div class="alert alert-danger">Gagal memuat halaman.</div>');
-    };
+    async function generateLaporan(start = null, end = null) {
+      const pemasukanSnap = await getDocs(collection(db, "pemasukan"));
+      const pengeluaranSnap = await getDocs(collection(db, "pengeluaran"));
+
+      let totalPemasukan = 0, totalPengeluaran = 0;
+
+      pemasukanSnap.forEach(doc => {
+        totalPemasukan += parseInt(doc.data().jumlah || 0);
+      });
+
+      pengeluaranSnap.forEach(doc => {
+        totalPengeluaran += parseInt(doc.data().jumlah || 0);
+      });
+
+      const saldo = totalPemasukan - totalPengeluaran;
+
+      document.getElementById("totalPemasukan").textContent = "Rp " + totalPemasukan.toLocaleString();
+      document.getElementById("totalPengeluaran").textContent = "Rp " + totalPengeluaran.toLocaleString();
+      document.getElementById("saldoAkhir").textContent = "Rp " + saldo.toLocaleString();
+
+      renderChart(totalPemasukan, totalPengeluaran);
+    }
+
+    function renderChart(pemasukan, pengeluaran) {
+      const ctx = document.getElementById('laporanChart').getContext('2d');
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Pemasukan', 'Pengeluaran'],
+          datasets: [{
+            label: 'Total (Rp)',
+            data: [pemasukan, pengeluaran],
+            backgroundColor: ['#198754', '#dc3545']
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function filterPeriode() {
+      Swal.fire({
+        title: 'Filter Periode',
+        html: `
+          <label>Dari (YYYY-MM-DD)</label>
+          <input type="date" id="startDate" class="swal2-input">
+          <label>Sampai (YYYY-MM-DD)</label>
+          <input type="date" id="endDate" class="swal2-input">
+        `,
+        confirmButtonText: 'Terapkan',
+        showCancelButton: true,
+        preConfirm: () => {
+          const start = document.getElementById('startDate').value;
+          const end = document.getElementById('endDate').value;
+          if (!start || !end) {
+            Swal.showValidationMessage('Mohon isi kedua tanggal.');
+          }
+          return { start, end };
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.fire('Info', 'Fitur filter periodik dalam pengembangan.', 'info');
+          // Nanti bisa dikembangkan filter firebase dengan where() dan orderBy()
+        }
+      });
+    }
 
     window.logout = () => {
       Swal.fire({
@@ -67,27 +180,17 @@
         cancelButtonText: 'Batal'
       }).then(async (result) => {
         if (result.isConfirmed) {
-          try {
-            await signOut(auth);
-            Swal.fire({
-              icon: 'success',
-              title: 'Logout berhasil',
-              showConfirmButton: false,
-              timer: 1500
-            }).then(() => {
-              window.location.href = "index.html";
-            });
-          } catch (error) {
-            Swal.fire('Gagal Logout', error.message, 'error');
-          }
+          await signOut(auth);
+          Swal.fire({
+            icon: 'success',
+            title: 'Logout berhasil',
+            showConfirmButton: false,
+            timer: 1500
+          }).then(() => window.location.href = "login.html");
         }
       });
     };
-
-    // Default load halaman pengeluaran
-    window.onload = () => {
-      loadPage('pengeluaran.html');
-    };
   </script>
 </body>
+
 </html>
