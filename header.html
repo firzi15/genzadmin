@@ -84,11 +84,16 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const API_URL = "https://sheet.best/api/sheets/79b7b5d1-2b64-45be-8049-5415a0335e6e";
+    const API_KEY = "VwDdwU#VUDy8R4VZ66T02B1tdLMOlOn5KH$0cArDXkw8PKF8KSY4Zn6!#wVs@TGA";
 
     document.addEventListener("DOMContentLoaded", ambilData);
 
     function ambilData() {
-      fetch(API_URL)
+      fetch(API_URL, {
+        headers: {
+          "Authorization": `Bearer ${API_KEY}`
+        }
+      })
         .then(res => res.json())
         .then(data => tampilkanData(data));
     }
@@ -99,13 +104,13 @@
       let total = 0;
 
       data.forEach((item, index) => {
-        total += parseInt(item.Jumlah);
+        total += parseInt(item.Jumlah || 0);
         tbody.innerHTML += `
           <tr>
             <td>${index + 1}</td>
-            <td>${item.Keterangan}</td>
-            <td>Rp ${parseInt(item.Jumlah).toLocaleString()}</td>
-            <td>${item.Tanggal}</td>
+            <td>${item.Keterangan || ""}</td>
+            <td>Rp ${parseInt(item.Jumlah || 0).toLocaleString()}</td>
+            <td>${item.Tanggal || ""}</td>
           </tr>
         `;
       });
@@ -125,7 +130,10 @@
 
       fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${API_KEY}`
+        },
         body: JSON.stringify({ Keterangan: ket, Jumlah: jumlah, Tanggal: tanggal })
       })
       .then(() => {
