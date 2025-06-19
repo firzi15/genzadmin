@@ -47,8 +47,8 @@
  <!-- Load Navbar -->
  <script type="module">
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-  import { app } from "./js/firebase-init.js";
-  import { logout } from "./js/logout.js";
+  import { app } from "firebase-init.js";
+  import { logout } from "logout.js";
 
   const auth = getAuth(app);
 
@@ -67,8 +67,6 @@
     });
 </script>
 
-
-// end of experiment
   
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
