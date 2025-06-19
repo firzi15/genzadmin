@@ -6,6 +6,7 @@
   <title>GENZET HOME PANEL</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <style>
     body { margin:0; padding:0; }
     #content { padding: 1rem; }
@@ -13,7 +14,6 @@
   </style>
 </head>
 <body>
-  <!-- Header/Navbar -->
   <nav class="navbar navbar-expand-lg navbar-light mb-4" style="border-bottom: 1px solid #ccc;">
     <div class="container-fluid">
       <a class="navbar-brand fw-bold" href="#">GENZET HOME</a>
@@ -30,27 +30,68 @@
     </div>
   </nav>
 
-  <!-- Kontainer Halaman -->
   <div id="content">Memuat halaman...</div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    function loadPage(page) {
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCxjTmRPiF4OrRAsneB_SUi1SpGOgkwrYg",
+      authDomain: "genzet-home.firebaseapp.com",
+      projectId: "genzet-home",
+      storageBucket: "genzet-home.appspot.com",
+      messagingSenderId: "586231239859",
+      appId: "1:586231239859:web:9fc3a69f2f2ef0bf8c8cc6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Cek apakah sudah login, kalau belum redirect ke login.html
+    onAuthStateChanged(auth, (user) => {
+      if (!user) window.location.href = "login.html";
+    });
+
+    window.loadPage = (page) => {
       fetch(page)
         .then(res => res.text())
         .then(html => document.getElementById('content').innerHTML = html)
         .catch(err => document.getElementById('content').innerHTML = '<div class="alert alert-danger">Gagal memuat halaman.</div>');
-    }
+    };
 
-    function logout() {
-      alert('Logout berhasil.');
-      location.reload();
-    }
+    window.logout = () => {
+      Swal.fire({
+        title: 'Keluar dari akun?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await signOut(auth);
+            Swal.fire({
+              icon: 'success',
+              title: 'Logout berhasil',
+              showConfirmButton: false,
+              timer: 1500
+            }).then(() => {
+              window.location.href = "index.html";
+            });
+          } catch (error) {
+            Swal.fire('Gagal Logout', error.message, 'error');
+          }
+        }
+      });
+    };
 
-    // Load pengeluaran.html secara default saat halaman dibuka
+    // Default load halaman pengeluaran
     window.onload = () => {
-      loadPage('pengeluaran.html');
-    }
+      loadPage('cpanel.html');
+    };
   </script>
 </body>
 </html>
