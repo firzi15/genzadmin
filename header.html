@@ -13,3 +13,11 @@
     </div>
   </div>
 </nav>
+
+<script>
+  // Memuat header.html ke elemen dengan id="navbar-placeholder"
+  fetch('header.html')
+    .then(res => res.text())
+    .then(data => document.getElementById('navbar-placeholder').innerHTML = data);
+</script>
+
